@@ -3,8 +3,9 @@ package hosc.lang
 import Util._
 
 /**
- * See http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/CoreSynType
- * for description of Haskell core language. 
+ * See:
+ *   http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/CoreSynType
+ *   http://hackage.haskell.org/package/haskell-src-1.0.1.3 
  */
 abstract sealed class Expr {
 	/**
