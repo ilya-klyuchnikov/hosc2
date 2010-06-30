@@ -51,5 +51,7 @@ case class TypeCon(name: String, args: List[Type]) extends Type
 case class TypeFun(from: Type, to: Type) extends Type
 
 case class DataCon(name: String, args: List[Type])
-
 case class DataDecl(name: String, args: List[TypeVar], cons: List[DataCon])
+
+// "abstract bindings"
+case class TypeSig(name: String, `type`: Type)
