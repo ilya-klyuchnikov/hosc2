@@ -2,15 +2,18 @@ package hosc.lang
 
 import Util._
 
-/**
+/*
+ * This is an attempt to represent a subset of Haskell Language that is 
+ * close to Haskell Core.
+ *  
  * See:
  *   http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/CoreSynType
  *   http://hackage.haskell.org/package/haskell-src-1.0.1.3 
  */
+
+case class Module(dataDecls: List[DataDecl], binds: List[Bind])
+
 abstract sealed class Expr {
-	/**
-	 * Canonical size of expression 
-	 */
 	def size: Int
 }
 
@@ -37,8 +40,16 @@ case class Case(sel: Expr, alts: List[Alt]) extends Expr {
 case class Let(binds: List[Bind], expr: Expr) extends Expr {
 	val size = expr.size + sum(binds map {1 + _.expr.size})
 }
-
-// auxiliary data  
+  
 case class Bind(v: Var, expr: Expr)
 case class Alt(pat: Pat, expr: Expr)
 case class Pat(name: String, args: List[Var])
+
+sealed abstract class Type
+case class TypeVar(name: String) extends Type
+case class TypeCon(name: String, args: List[Type]) extends Type
+case class TypeFun(from: Type, to: Type) extends Type
+
+case class DataCon(name: String, args: List[Type])
+
+case class DataDecl(name: String, args: List[TypeVar], cons: List[DataCon])
