@@ -1,4 +1,4 @@
-package hosc.lang
+package hosc.lang.core
 
 import Util._
 

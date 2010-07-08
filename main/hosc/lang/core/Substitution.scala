@@ -1,4 +1,4 @@
-package hosc.lang
+package hosc.lang.core
 
 object Substitution {
 	// def applyRenaming [E <: Expr] (expr: E): E
