@@ -17,16 +17,21 @@ abstract sealed class Expr {
 	def size: Int
 }
 
-case class Var(name: String) extends Expr {
+abstract sealed class Var extends Expr {
 	val size = 1
 }
+
+// free, global, bound variables
+case class FVar(n: Int) extends Var
+case class GVar(n: Int) extends Var
+case class BVar(i1: Int, i2: Int) extends Var
 
 case class Con(name: String, args: List[Expr]) extends Expr {
 	val size = 1 + sum(args map {_.size})
 }
 
-case class Lam(v: Var, body: Expr) extends Expr {
-	val size = 1 + body.size
+case class Lam(e: Expr) extends Expr {
+	val size = 1 + e.size
 }
 
 case class App(e1: Expr, e2: Expr) extends Expr {
