@@ -9,9 +9,15 @@ package hosc.lang.io
  * rather that for supercompilation.
  */
 
-abstract sealed class Expr
+abstract sealed class HsExpr
 
-case class Var(name: String) extends Expr
-case class Con(name: String, args: List[Expr]) extends Expr
-case class Lam(v: Var, e: Expr) extends Expr
-case class App(e1: Expr, e2: Expr) extends Expr
+case class HsVar(name: String) extends HsExpr
+case class HsCon(name: String, args: List[HsExpr]) extends HsExpr
+case class HsLam(v: HsVar, e: HsExpr) extends HsExpr
+case class HsApp(e1: HsExpr, e2: HsExpr) extends HsExpr
+
+case class HsCase(sel: HsExpr, alts: List[HsAlt]) extends HsExpr
+
+case class HsBind(v: HsVar, expr: HsExpr)
+case class HsAlt(pat: HsPat, expr: HsExpr)
+case class HsPat(name: String, args: List[HsVar])

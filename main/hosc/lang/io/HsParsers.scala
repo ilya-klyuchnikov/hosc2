@@ -10,9 +10,9 @@ object HsParsers extends HsTokenParsers with PackratParsers with ImplicitConvers
 	lexical.delimiters += ("(", ")", ",", "=", ";", "{", "}", "::", "|", "->", "\\", "[", "]", "=>")
 	lexical.reserved += ("case", "of", "where", "data", "let", "in")
 	 
-	lazy val expr: PackratParser[Expr] = chainl1(head, arg, success(App(_, _)))
-	lazy val lam:  PackratParser[Lam] = "\\" ~> vrb ~ expr ^^ Lam
-	lazy val vrb:  PackratParser[Var] = ident ^^ Var
+	lazy val expr: PackratParser[HsExpr] = chainl1(head, arg, success(HsApp(_, _)))
+	lazy val lam:  PackratParser[HsLam] = "\\" ~> vrb ~ expr ^^ HsLam
+	lazy val vrb:  PackratParser[HsVar] = ident ^^ HsVar
 	
 	lazy val head = vrb | lam | "(" ~> expr <~ ")"
 	lazy val arg = head | "(" ~> expr <~ ")"
