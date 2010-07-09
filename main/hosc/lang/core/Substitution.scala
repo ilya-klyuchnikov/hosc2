@@ -20,7 +20,8 @@ object Substitution {
 			case Case(sel, alts) => Case(ms(sel), alts map {case Alt(p, e) => Alt(p, ms(e))})
 			case Let(bs, e) => Let(bs map {case Bind(v, e) => Bind(v, ms(e))}, ms(e))
 			case _ => e
-	    }
+		}
+		
 		ms(expr)
 	}
 	
