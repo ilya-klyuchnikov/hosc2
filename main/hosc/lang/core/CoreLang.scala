@@ -11,7 +11,7 @@ import Util._
  *   http://hackage.haskell.org/package/haskell-src-1.0.1.3 
  */
 
-case class Module(dataDecls: List[DataDecl], binds: List[Bind])
+case class Module(binds: List[Bind])
 
 abstract sealed class Expr {
 	def size: Int
@@ -50,13 +50,3 @@ case class Bind(v: Var, expr: Expr)
 case class Alt(pat: Pat, expr: Expr)
 case class Pat(name: String, args: List[Var])
 
-sealed abstract class Type
-case class TypeVar(name: String) extends Type
-case class TypeCon(name: String, args: List[Type]) extends Type
-case class TypeFun(from: Type, to: Type) extends Type
-
-case class DataCon(name: String, args: List[Type])
-case class DataDecl(name: String, args: List[TypeVar], cons: List[DataCon])
-
-// "abstract bindings"
-case class TypeSig(name: String, `type`: Type)
