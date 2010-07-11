@@ -11,16 +11,18 @@ object HsParsers extends HsTokenParsers with PackratParsers with ImplicitConvers
 	lexical.reserved += ("case", "of", "where", "data", "let", "in")
 	
 	lazy val expr: PackratParser[HsExpr] = chainl1(head, arg, success(HsApp(_, _)))
-	lazy val lam:  PackratParser[HsExpr] = ("\\" ~> (vrb+)) ~ ("->" ~> expr) ^^ {case vs ~ e => vs.foldRight(e) {HsLam(_, _)}}
-	lazy val vrb:  PackratParser[HsVar] = ident ^^ HsVar
-	lazy val head = vrb | lam | caze | "(" ~> expr <~ ")"
-	lazy val arg = head | "(" ~> expr <~ ")"
+	lazy val module = (bind*) ^^ HsModule
+	
+	lazy val lam  = ("\\" ~> (vrb+)) ~ ("->" ~> expr) ^^ {case vs ~ e => vs.foldRight(e) {HsLam(_, _)}}
+	lazy val vrb  = ident ^^ HsVar
+	lazy val head = vrb | lam | caze | let | "(" ~> expr <~ ")"
+	lazy val arg  = head | "(" ~> expr <~ ")"
 	lazy val caze = ("case" ~> expr) ~ ("of" ~> "{" ~> (alt*) <~ "}") ^^ HsCase 
+	lazy val let  = ("let" ~> (bind+)) ~ ("in" ~> expr) ^^ HsLet
 	
 	lazy val bind = (vrb <~ "=") ~ (expr <~ ";") ^^ HsBind
 	lazy val pat = ident ~ (vrb*) ^^ HsPat
 	lazy val alt = pat ~ ("->" ~> expr <~ ";") ^^ HsAlt
-	lazy val module = (bind*) ^^ HsModule
 	
 	def parse[T](p: Parser[T])(r: Reader[Char]): ParseResult[T] = 
 		phrase(p)(new PackratReader(new lexical.Scanner(r)))
