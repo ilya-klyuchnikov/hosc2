@@ -9,7 +9,7 @@ package hosc.lang.io
  * rather that for supercompilation.
  */
 
-case class HsModule(binds: List[HsBind])
+case class HsModule(dataDefs: List[HsDataDef], binds: List[HsBind])
 
 abstract sealed class HsExpr
 
@@ -30,8 +30,8 @@ case class HsTypeVar(name: String) extends HsType
 case class HsTypeCon(name: String, args: List[HsType]) extends HsType
 case class HsTypeFun(from: HsType, to: HsType) extends HsType
 
-case class DataCon(name: String, args: List[HsType])
-case class DataDecl(name: String, args: List[HsTypeVar], cons: List[DataCon])
+case class HsDataCon(name: String, args: List[HsType])
+case class HsDataDef(name: String, args: List[HsTypeVar], cons: List[HsDataCon])
 
 // "abstract bindings"
 case class TypeSig(name: String, `type`: HsType)
