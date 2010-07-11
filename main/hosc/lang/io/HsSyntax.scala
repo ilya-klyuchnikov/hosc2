@@ -9,6 +9,8 @@ package hosc.lang.io
  * rather that for supercompilation.
  */
 
+case class HsModule(binds: List[HsBind])
+
 abstract sealed class HsExpr
 
 case class HsVar(name: String) extends HsExpr
@@ -17,6 +19,7 @@ case class HsLam(v: HsVar, e: HsExpr) extends HsExpr
 case class HsApp(e1: HsExpr, e2: HsExpr) extends HsExpr
 
 case class HsCase(sel: HsExpr, alts: List[HsAlt]) extends HsExpr
+case class HsLet(binds: List[HsBind], expr: HsExpr) extends HsExpr
 
 case class HsBind(v: HsVar, expr: HsExpr)
 case class HsAlt(pat: HsPat, expr: HsExpr)
