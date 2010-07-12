@@ -19,20 +19,20 @@ object HsParsers extends StandardTokenParsers with ImplicitConversions {
 	def let  = ("let" ~> (bind+)) ~ ("in" ~> expr) ^^ HsLet
 	def elem = vrb | lam | caze | let | "(" ~> expr <~ ")"
 	def bind = (vrb <~ "=") ~ (expr <~ ";") ^^ HsBind
-	def pat = ident ~ (vrb*) ^^ HsPat
+	def pat = uId ~ (vrb*) ^^ HsPat
 	def alt = pat ~ ("->" ~> expr <~ ";") ^^ HsAlt
 	
 	def dataConDef = ("data" ~> ident) ~ (tVrb*) ~ ("=" ~> rep1sep(dCon, "|") <~ ";") ^^ HsDataDef
 	def `type`: Parser[HsType] = rep1sep(tElem, "->") ^^ {_.reduceRight{HsTypeFun}}
-	def tVrb = ident ^? {case id if lId_?(id) => HsTypeVar(id)}
-	def tArg = ident ^? {case id if uId_?(id) => HsTypeCon(id, Nil)} | tVrb | "(" ~> `type` <~ ")"
-	def tCon = ident ~ (tArg*) ^? {case id ~ args if uId_?(id) => HsTypeCon(id, args)}
+	def tVrb = lId ^^ HsTypeVar
+	def tArg = uId ^^ {HsTypeCon(_, Nil)} | tVrb | "(" ~> `type` <~ ")"
+	def tCon = uId ~ (tArg*) ^^ HsTypeCon
 	def tElem = tVrb | tCon | "(" ~> `type` <~ ")"
-	def dCon = ident ~ (`type`*) ^? {case id ~ args if uId_?(id) => HsDataCon(id, args)}
+	def dCon = uId ~ (`type`*) ^^ HsDataCon
 	def parse[T](p: Parser[T])(r: Reader[Char]) = phrase(p)(new lexical.Scanner(r))
 	
-	def uId_?(id: String) = id.head.isUpper
-	def lId_?(id: String) = id.head.isLower
+	def uId = ident ^? {case x if x.head.isUpper => x}
+	def lId = ident ^? {case x if x.head.isLower => x}
 }
 
 import scala.util.parsing.input.CharArrayReader.EofCh
