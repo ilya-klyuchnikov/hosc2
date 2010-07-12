@@ -6,8 +6,7 @@ import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{ImplicitConversions, Parsers, PackratParsers}
 
 object HsParsers extends StandardTokenParsers with PackratParsers with ImplicitConversions {
-	override val lexical = new HsLexical
-	
+	override val lexical = new HsLexical	
 	lexical.delimiters += ("(", ")", ",", "=", ";", "{", "}", "::", "|", "->", "\\", "[", "]", "=>")
 	lexical.reserved += ("case", "of", "where", "data", "let", "in")
 	
@@ -27,12 +26,18 @@ object HsParsers extends StandardTokenParsers with PackratParsers with ImplicitC
 	lazy val dataConDef = ("data" ~> ident) ~ (tVrb*) ~ ("=" ~> rep1sep(dCon, "|") <~ ";") ^^ HsDataDef
 	
 	lazy val `type`: PackratParser[HsType] = rep1sep(tElem, "->") ^^ {_.reduceRight{HsTypeFun}}
-	lazy val tVrb = ident ^^ HsTypeVar
-	lazy val tCon = ident ~ (`type`*) ^^ HsTypeCon
-	lazy val dCon = ident ~ (`type`*) ^^ HsDataCon
+	
+	lazy val tVrb = ident ^? {case id if lId_?(id) => HsTypeVar(id)}
+	lazy val tArg = ident ^? {case id if uId_?(id) => HsTypeCon(id, Nil)} | tVrb | "(" ~> `type` <~ ")"
+	lazy val tCon = ident ~ (tArg*) ^? {case id ~ args if uId_?(id) => HsTypeCon(id, args)}
 	lazy val tElem = tVrb | tCon | "(" ~> `type` <~ ")"
 	
+	lazy val dCon = ident ~ (`type`*) ^? {case id ~ args if uId_?(id) => HsDataCon(id, args)}
+	
 	def parse[T](p: Parser[T])(r: Reader[Char]) = phrase(p)(new PackratReader(new lexical.Scanner(r)))
+	
+	def uId_?(id: String) = id.head.isUpper
+	def lId_?(id: String) = id.head.isLower
 }
 
 import scala.util.parsing.input.CharArrayReader.EofCh
