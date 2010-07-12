@@ -7,8 +7,8 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.parsing.input.{CharArrayReader, Reader}
 
 import hosc.lang.io.{HsVar => V, HsApp => A, HsLam => L, HsCase => Cs, 
-	HsAlt => Al, HsPat => P, HsBind => B, HsLet => Let, HsCon => C, 
-	HsTypeVar => TV, HsTypeCon => TC, HsTypeFun => TF, _}
+	HsAlt => Alt, HsPat => P, HsBind => B, HsLet => Let, HsCon => C, 
+	HsTypeVar => TV, HsTypeCon => TC, HsTypeFun => TF, HsDataDef => DF, HsDataCon => DC, _}
 
 @RunWith(classOf[JUnitRunner])
 class HsParsersSpec extends FunSuite with ShouldMatchers {
@@ -35,7 +35,7 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
 		parseExprRaw("\\x y -> x y") should equal {L('x, L('y, A('x, 'y)))}
 		
 		parseExprRaw("case x of {Nil -> Nil;}") should equal 
-			{Cs('x, List( Al(P("Nil", Nil), 'Nil) ))}
+			{Cs('x, List( Alt(P("Nil", Nil), 'Nil) ))}
 		
 		parseExprRaw{"let x = y; z = t; in x t"} should equal 
 			{Let(List(B('x, 'y), B('z, 't)), A('x, 't))}
@@ -45,7 +45,7 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
 	}
 	
 	test("Base expression parsing + constructor postprocessing") {
-		parseExprPost("A") should equal 
+		parseExprPost(" A ") should equal 
 			{C("A", Nil)}
 		
 		parseExprPost("A b") should equal 
@@ -73,7 +73,7 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
         	{C("Data1", C("Data2", V("x") :: V("y") :: Nil) :: V("z") :: Nil)}
 		
 		parseExprPost("case x of {Nil -> Nil;}") should equal 
-			{Cs('x, List( Al(P("Nil", Nil), C("Nil", Nil)) ))}
+			{Cs('x, List( Alt(P("Nil", Nil), C("Nil", Nil)) ))}
 		
 		parseExprPost("a Cons b c") should equal 
 			{A(A(A(V("a"), C("Cons", Nil)), V("b")), V("c"))}
@@ -119,8 +119,52 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
 	}
 	
 	test("base type parsing") {
+		evaluating {parseType("(TC1 TC2) a TC2 a")} should produce [Exception]
+		
 		parseType("TC1 TC2 a TC2 a") should equal
 			{TC("TC1", TC("TC2", Nil) :: TV("a") :: TC("TC2", Nil) :: TV("a") :: Nil)}
+		
+		parseType("a -> b") should equal
+			{TF(TV("a"), TV("b"))}
+		
+		parseType("a -> b -> c") should equal
+			{TF(TV("a"), TF(TV("b"), TV("c")))}
+	}
+	
+	test("simple module") {
+		val listT = DF("List", TV("a") :: Nil, DC("Nil", Nil) :: DC("Cons", TV("a") :: TC("List", TV("a") :: Nil) :: Nil) :: Nil)
+		val rev = B('rev, L(V("xs"), 
+				Cs(V("xs"),
+					Alt(P("Nil", Nil), C("Nil", Nil)) :: 
+					Alt(P("Cons", V("z") :: V("zs") :: Nil), 
+					A(A(V("app"), A(V("rev"), V("zs"))), C("Cons", V("z") :: C("Nil", Nil) :: Nil))) ::
+					Nil
+					)
+        		))
+        val app = B('app, L(V("xs"), L(V("ys"), 
+        		Cs(V("xs"),
+        			Alt(P("Nil", Nil), V("ys")) :: 
+        			Alt(P("Cons", V("z") :: V("zs") :: Nil), C("Cons", V("z") :: A(A(V("app"), V("zs")), V("ys")) :: Nil)) ::
+        			Nil
+        			)
+        		)))
+        val expected = HsModule(listT :: Nil, rev :: app :: Nil )
+        
+        val input = """
+        	data List a = Nil | Cons a (List a);
+        	
+        	rev = \xs -> case xs of {
+        		Nil -> Nil;
+        		Cons z  zs -> app (rev zs) (Cons z Nil);
+        	};
+        	
+        	app = \xs ys -> case xs of {
+        		Nil -> ys;
+        		Cons z zs -> Cons z (app zs ys);
+        	};
+        	"""
+        
+        parseModule(input) should equal {expected}
 	}
 	
 	import hosc.lang.io.HsParsers._
@@ -132,11 +176,16 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
 	}
 	
 	def parseType(in: String) = {
-		val res = parse(tCon)(new CharArrayReader(in.toCharArray))
+		val res = parse(`type`)(new CharArrayReader(in.toCharArray))
 		res.get
 	}
 	
 	def parseExprPost(in: String) = {
 		cons(parseExprRaw(in))
+	}
+	
+	def parseModule(in: String) = {
+		val res = parse(module)(new CharArrayReader(in.toCharArray))
+		walk(res.get)
 	}
 }
