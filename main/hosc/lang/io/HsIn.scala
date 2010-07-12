@@ -23,3 +23,15 @@ object HsPostProcessor {
 	def uId_?(id: String) = id.head.isUpper
 	def lId_?(id: String) = id.head.isLower
 }
+
+import scala.io.Source
+import scala.util.parsing.input.StreamReader
+
+object HsIn {
+	def readHsModule(path: String): HsModule = {
+		val reader = StreamReader(Source.fromFile(path).reader)
+		val parseResult = HsParsers.parse(HsParsers.module)(reader)
+		val module = parseResult.get
+		HsPostProcessor.walk(module)
+	}
+}
