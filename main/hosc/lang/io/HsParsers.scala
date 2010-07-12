@@ -18,22 +18,17 @@ object HsParsers extends StandardTokenParsers with ImplicitConversions {
 	def caze = ("case" ~> expr) ~ ("of" ~> "{" ~> (alt*) <~ "}") ^^ HsCase 
 	def let  = ("let" ~> (bind+)) ~ ("in" ~> expr) ^^ HsLet
 	def elem = vrb | lam | caze | let | "(" ~> expr <~ ")"
-	
 	def bind = (vrb <~ "=") ~ (expr <~ ";") ^^ HsBind
 	def pat = ident ~ (vrb*) ^^ HsPat
 	def alt = pat ~ ("->" ~> expr <~ ";") ^^ HsAlt
 	
 	def dataConDef = ("data" ~> ident) ~ (tVrb*) ~ ("=" ~> rep1sep(dCon, "|") <~ ";") ^^ HsDataDef
-	
 	def `type`: Parser[HsType] = rep1sep(tElem, "->") ^^ {_.reduceRight{HsTypeFun}}
-	
 	def tVrb = ident ^? {case id if lId_?(id) => HsTypeVar(id)}
 	def tArg = ident ^? {case id if uId_?(id) => HsTypeCon(id, Nil)} | tVrb | "(" ~> `type` <~ ")"
 	def tCon = ident ~ (tArg*) ^? {case id ~ args if uId_?(id) => HsTypeCon(id, args)}
 	def tElem = tVrb | tCon | "(" ~> `type` <~ ")"
-	
 	def dCon = ident ~ (`type`*) ^? {case id ~ args if uId_?(id) => HsDataCon(id, args)}
-	
 	def parse[T](p: Parser[T])(r: Reader[Char]) = phrase(p)(new lexical.Scanner(r))
 	
 	def uId_?(id: String) = id.head.isUpper
