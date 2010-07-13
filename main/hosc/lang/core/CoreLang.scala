@@ -22,9 +22,9 @@ abstract sealed class Var extends Expr {
 }
 
 // free, global, bound variables
-case class FVar(n: Int) extends Var
-case class GVar(n: Int) extends Var
-case class BVar(i1: Int, i2: Int) extends Var
+case class FVar(i: Int) extends Var
+case class GVar(i: Int) extends Var
+case class BVar(i: Int) extends Var
 
 case class Con(name: String, args: List[Expr]) extends Expr {
 	val size = 1 + sum(args map {_.size})

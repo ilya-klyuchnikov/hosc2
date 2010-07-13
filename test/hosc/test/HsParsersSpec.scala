@@ -11,7 +11,7 @@ import hosc.lang.io.{HsVar => V, HsApp => A, HsLam => L, HsCase => Cs,
 	HsTypeVar => TV, HsTypeCon => TC, HsTypeFun => TF, HsDataDef => DF, HsDataCon => DC, _}
 
 @RunWith(classOf[JUnitRunner])
-class HsParsersSpec extends FunSuite with ShouldMatchers {
+class HsParsersSpec extends FunSuite with ShouldMatchers with Util {
 	implicit def symbol2var(s: Symbol) = V(s.name)
 	implicit def symbol2tvar(s: Symbol) = TV(s.name)
 	
@@ -45,76 +45,76 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
 	}
 	
 	test("Base expression parsing + constructor postprocessing") {
-		parseExprPost(" A ") should equal 
+		parseExpr(" A ") should equal 
 			{C("A", Nil)}
 		
-		parseExprPost("A b") should equal 
+		parseExpr("A b") should equal 
         	{C("A", 'b :: Nil)}
 		
-		parseExprPost("(A b)") should equal 
+		parseExpr("(A b)") should equal 
         	{C("A", 'b :: Nil)}
 		
-		parseExprPost("A (b)") should equal 
+		parseExpr("A (b)") should equal 
         	{C("A", 'b :: Nil)}
 		
-		parseExprPost("(A) b") should equal 
+		parseExpr("(A) b") should equal 
         	{C("A", 'b :: Nil)}
 		
-		parseExprPost("A B C") should equal 
+		parseExpr("A B C") should equal 
         	{C("A", C("B", Nil) :: C("C", Nil) :: Nil)}
 		
-		parseExprPost("A (B C)") should equal 
+		parseExpr("A (B C)") should equal 
         	{C("A", C("B", C("C", Nil) :: Nil) :: Nil)}
 		
-		parseExprPost("(A B) C") should equal 
+		parseExpr("(A B) C") should equal 
         	{C("A", C("B", Nil) :: C("C", Nil) :: Nil)}
 		
-		parseExprPost("Data1 (Data2 x y) z") should equal 
+		parseExpr("Data1 (Data2 x y) z") should equal 
         	{C("Data1", C("Data2", V("x") :: V("y") :: Nil) :: V("z") :: Nil)}
 		
-		parseExprPost("case x of {Nil -> Nil;}") should equal 
+		parseExpr("case x of {Nil -> Nil;}") should equal 
 			{Cs('x, List( Alt(P("Nil", Nil), C("Nil", Nil)) ))}
 		
-		parseExprPost("a Cons b c") should equal 
+		parseExpr("a Cons b c") should equal 
 			{A(A(A(V("a"), C("Cons", Nil)), V("b")), V("c"))}
 		
-		parseExprPost("(A V) e") should equal 
+		parseExpr("(A V) e") should equal 
 			{C("A", C("V", Nil) :: V("e") :: Nil)}
 		
-		parseExprPost("x A y") should equal 
+		parseExpr("x A y") should equal 
 			{A(A(V("x"), C("A", Nil)), V("y"))}
 		
-		parseExprPost("x y z v") should equal 
+		parseExpr("x y z v") should equal 
 			{A(A(A(V("x"), V("y")), V("z")), V("v"))}
 		
-		parseExprPost("(x y) z v") should equal 
+		parseExpr("(x y) z v") should equal 
 			{A(A(A(V("x"), V("y")), V("z")), V("v"))}
 		
-		parseExprPost("(x y) (z v)") should equal 
+		parseExpr("(x y) (z v)") should equal 
 			{A(A(V("x"), V("y")), A(V("z"), V("v")))}
 		
-		parseExprPost("x Y z V") should equal 
+		parseExpr("x Y z V") should equal 
 			{A(A(A(V("x"), C("Y", Nil)), V("z")), C("V", Nil))}
 		
-		parseExprPost("(x Y) z V") should equal 
+		parseExpr("(x Y) z V") should equal 
 			{A(A(A(V("x"), C("Y", Nil)), V("z")), C("V", Nil))}
 		
-		parseExprPost("(x Y) (z V)") should equal 
+		parseExpr("(x Y) (z V)") should equal 
 			{A(A(V("x"), C("Y", Nil)), A(V("z"), C("V", Nil)))}
 		
-		parseExprPost("x (A y)") should equal 
+		parseExpr("x (A y)") should equal 
 			{A(V("x"), C("A", V("y") :: Nil))}
 		
-		parseExprPost("""\x -> (\y -> (Cons x y))""") should equal 
+		parseExpr("""\x -> (\y -> (Cons x y))""") should equal 
 			{L(V("x"), L(V("y"), C("Cons", List(V("x"), V("y")))))}
 		
-		parseExprPost("""\x -> (\y -> Cons x y)""") should equal 
+		parseExpr("""\x -> (\y -> Cons x y)""") should equal 
 			{L(V("x"), L(V("y"), C("Cons", List(V("x"), V("y")))))}
 		
-		parseExprPost("""\x -> \y -> Cons x y""") should equal 
+		parseExpr("""\x -> \y -> Cons x y""") should equal 
 			{L(V("x"), L(V("y"), C("Cons", List(V("x"), V("y")))))}
 		
-		parseExprPost("""\x y -> Cons x y""") should equal 
+		parseExpr("""\x y -> Cons x y""") should equal 
 			{L(V("x"), L(V("y"), C("Cons", List(V("x"), V("y")))))}
 	}
 	
@@ -165,27 +165,5 @@ class HsParsersSpec extends FunSuite with ShouldMatchers {
         	"""
         
         parseModule(input) should equal {expected}
-	}
-	
-	import hosc.lang.io.HsParsers._
-	import hosc.lang.io.HsPostProcessor._
-	
-	def parseExprRaw(in: String) = {
-		val res = parse(expr)(new CharArrayReader(in.toCharArray))
-		res.get
-	}
-	
-	def parseType(in: String) = {
-		val res = parse(`type`)(new CharArrayReader(in.toCharArray))
-		res.get
-	}
-	
-	def parseExprPost(in: String) = {
-		cons(parseExprRaw(in))
-	}
-	
-	def parseModule(in: String) = {
-		val res = parse(module)(new CharArrayReader(in.toCharArray))
-		walk(res.get)
 	}
 }
