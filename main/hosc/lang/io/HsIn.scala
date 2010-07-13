@@ -14,8 +14,9 @@ object HsIn {
 	
 	def walkAllFixes(mod: HsModule) = {
 		val fixedConsBs = mod.binds map {case HsBind(v, e) => HsBind(v, cons(e))}
-		val fixedCazeBs = fixedConsBs map {case HsBind(v, e) => HsBind(v, canonizeCase(mod, e))}
-		HsModule(mod.dataDefs, fixedConsBs)
+		val consMap = consInfo(mod)
+		val fixedCazeBs = fixedConsBs map {case HsBind(v, e) => HsBind(v, canonizeCase(consMap, e))}
+		HsModule(mod.dataDefs, fixedCazeBs)
 	}
 	
 	def walkConFixes(mod: HsModule) = {
@@ -42,25 +43,24 @@ object HsIn {
 	
 	def dataTypeIndex(module: HsModule, dt: HsDataDef): Int = 
 		module.dataDefs.indexWhere(_ == dt)
-		
-	def conInfo(module: HsModule, conName: String): (Int, Int) = {
-		val dataDef = module.dataDefs.find{_.cons.exists{_.name == conName}}.get
-		val dataDefIndex = module.dataDefs.indexOf(dataDef)
-		val dataConIndex = dataDef.cons.indexWhere(_.name == conName)
-		(dataDefIndex, dataConIndex)
+	
+	def consInfo(module: HsModule): Map[String, (Int, Int)] = {
+		val indexed = module.dataDefs map {_.cons.zipWithIndex} zipWithIndex
+		val elems = List.concat(indexed map {case (d, i1) => d map {case (c, i2) => (c.name, (i1, i2))}}: _*)
+		Map(elems: _*)
 	}
 	
-	def canonizeCase(module: HsModule, expr: HsExpr): HsExpr = expr match {
-		case HsLam(v, e) => HsLam(v, canonizeCase(module, e))
-		case HsApp(e1, e2) => HsApp(canonizeCase(module, e1), canonizeCase(module, e2))
-		case HsLet(bs, e1) => HsLet(bs map {case HsBind(v, x) => HsBind(v, canonizeCase(module, x))}, canonizeCase(module, e1))
+	def canonizeCase(consInfo: Map[String, (Int, Int)], expr: HsExpr): HsExpr = expr match {
+		case HsLam(v, e) => HsLam(v, canonizeCase(consInfo, e))
+		case HsApp(e1, e2) => HsApp(canonizeCase(consInfo, e1), canonizeCase(consInfo, e2))
+		case HsLet(bs, e1) => HsLet(bs map {case HsBind(v, x) => HsBind(v, canonizeCase(consInfo, x))}, canonizeCase(consInfo, e1))
 		case HsCase(sel, alts) => {
-			val canSel = canonizeCase(module, sel)
-			val sortedAlts = alts.sortBy{x => conInfo(module, x.pat.name)._2}
-			val canAlts = sortedAlts map {case HsAlt(p, e1) => HsAlt(p, canonizeCase(module, e1))}
+			val canSel = canonizeCase(consInfo, sel)
+			val sortedAlts = alts.sortBy{x => consInfo(x.pat.name)._2}
+			val canAlts = sortedAlts map {case HsAlt(p, e1) => HsAlt(p, canonizeCase(consInfo, e1))}
 			HsCase(canSel, canAlts)
 		}
-		case HsCon(name, args) => HsCon(name, args map {canonizeCase(module, _)})
+		case HsCon(name, args) => HsCon(name, args map {canonizeCase(consInfo, _)})
 		case _ => expr
 	}
 }
