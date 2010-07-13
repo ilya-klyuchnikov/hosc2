@@ -11,7 +11,7 @@ import Util._
  *   http://hackage.haskell.org/package/haskell-src-1.0.1.3 
  */
 
-case class Module(binds: List[Bind])
+case class Module(dataTypes: List[DataType], binds: List[Bind])
 
 abstract sealed class Expr {
 	def size: Int
@@ -26,7 +26,7 @@ case class FVar(i: Int) extends Var
 case class GVar(i: Int) extends Var
 case class BVar(i: Int) extends Var
 
-case class Con(name: String, args: List[Expr]) extends Expr {
+case class Con(name: String, args: List[Expr], dtIndex: Int = -1, dcIndex: Int = -1) extends Expr {
 	val size = 1 + sum(args map {_.size})
 }
 
@@ -38,8 +38,8 @@ case class App(e1: Expr, e2: Expr) extends Expr {
 	val size = e1.size + e2.size
 }
 
-case class Case(sel: Expr, alts: List[Alt]) extends Expr {
-	val size = sel.size + sum(alts map {1 + _.expr.size})
+case class Case(dataType: Int = -1, sel: Expr, alts: List[Expr]) extends Expr {
+	val size = sel.size + sum(alts map {1 + _.size})
 }
 
 case class Let(binds: List[Bind], expr: Expr) extends Expr {
@@ -47,6 +47,6 @@ case class Let(binds: List[Bind], expr: Expr) extends Expr {
 }
   
 case class Bind(v: Var, expr: Expr)
-case class Alt(pat: Pat, expr: Expr)
-case class Pat(name: String, args: List[Var])
 
+case class DataCon(name: String, arity: Int)
+case class DataType(cons: List[DataCon])

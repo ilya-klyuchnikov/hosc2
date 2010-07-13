@@ -14,10 +14,10 @@ object Substitution {
 		// ms = map substitution
 		def ms(e: Expr): Expr = expr match {
 			case v@FVar(_) => sub(v)
-			case Con(n, es) => Con(n, es map ms)
+			case Con(n, es, dtI, dcI) => Con(n, es map ms, dtI, dcI)
 			case Lam(e) => Lam(ms(e))
 			case App(e1, e2) => App(ms(e1), ms(e2))
-			case Case(sel, alts) => Case(ms(sel), alts map {case Alt(p, e) => Alt(p, ms(e))})
+			case Case(dt, sel, alts) => Case(dt, ms(sel), alts map {ms})
 			case Let(bs, e) => Let(bs map {case Bind(v, e) => Bind(v, ms(e))}, ms(e))
 			case _ => e
 		}
@@ -29,10 +29,10 @@ object Substitution {
 		def walk(e: Expr): Expr = r.andThen(fallback)(e)
 		
 		def fallback(e: Expr): Expr = e match {
-			case Con(n, es) => Con(n, es map walk)
+			case Con(n, es, dtI, dcI) => Con(n, es map walk, dtI, dcI)
 			case Lam(e) => Lam(walk(e))
 			case App(e1, e2) => App(e1, e2)
-			case Case(sel, alts) => Case(walk(sel), alts map {case Alt(p, e) => Alt(p, walk(e))})
+			case Case(dt, sel, alts) => Case(dt, walk(sel), alts map {walk})
 			case Let(bs, e) => Let(bs map {case Bind(v, e) => Bind(v, walk(e))}, walk(e))
 			case _ => e
 		}

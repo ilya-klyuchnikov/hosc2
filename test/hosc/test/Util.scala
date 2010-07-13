@@ -1,7 +1,7 @@
 package hosc.test
 
 import hosc.lang.io.HsParsers._
-import hosc.lang.io.HsPostProcessor._
+import hosc.lang.io.HsIn._
 import scala.util.parsing.input.{CharArrayReader, Reader}
 
 trait Util {
@@ -21,6 +21,6 @@ trait Util {
 	
 	def parseModule(in: String) = {
 		val res = parse(module)(new CharArrayReader(in.toCharArray))
-		walk(res.get)
+		walkConFixes(res.get)
 	}
 }
