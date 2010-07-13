@@ -2,7 +2,7 @@ data List a = Nil  | Cons a (List a);
 
 nrev = \xs -> case xs of {
 	Nil -> Nil; 
-	Cons y ys -> app (nrev yz) (Cons y Nil);
+	Cons y ys -> app (nrev y) (Cons y Nil);
 };
 
 app = \xs ys -> case xs of {

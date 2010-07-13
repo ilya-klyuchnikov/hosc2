@@ -23,19 +23,26 @@ abstract sealed class Var extends Expr {
 
 // free, global, bound variables
 case class FVar(i: Int) extends Var
-case class GVar(i: Int) extends Var
-case class BVar(i: Int) extends Var
+case class GVar(i: Int) extends Var {
+	override def toString = "[" + i + "]"
+}
+case class BVar(i: Int) extends Var {
+	override def toString = i.toString
+}
 
 case class Con(name: String, args: List[Expr], dtIndex: Int = -1, dcIndex: Int = -1) extends Expr {
 	val size = 1 + sum(args map {_.size})
+	override def toString = "(" + name + (args match {case Nil => ""; case _ => args.mkString(" ", " ","")}) + ")"
 }
 
 case class Lam(e: Expr) extends Expr {
 	val size = 1 + e.size
+	override def toString = "(\\" + e + ")"
 }
 
 case class App(e1: Expr, e2: Expr) extends Expr {
 	val size = e1.size + e2.size
+	override def toString = "(" + e1 + " " + e2 + ")"
 }
 
 case class Case(dataType: Int = -1, sel: Expr, alts: List[Expr]) extends Expr {

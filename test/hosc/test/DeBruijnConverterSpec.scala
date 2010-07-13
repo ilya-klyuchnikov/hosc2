@@ -35,6 +35,6 @@ class DeBruijnConverterSpec extends FunSuite with ShouldMatchers with Util {
 	
 	def convertExpr(in: String) = {
 		val expr = parseExpr(in)
-		DeBruijnConverter.removeNames(Nil, Nil, expr)
+		DeBruijnConverter.removeNames(Map(), Nil, Nil, Nil, expr)
 	}
 }
