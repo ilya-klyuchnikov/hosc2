@@ -1,0 +1,7 @@
+1. Polish input/output API for hs - see t.scala
+2. Polish de Bruijn conversion 
+3. Invent a simple way for coding of extended de Bruijn indices
+4. Tests for input/output, conversion
+5. Interpreter based on de Bruijn indices
+6. Support for free variable
+

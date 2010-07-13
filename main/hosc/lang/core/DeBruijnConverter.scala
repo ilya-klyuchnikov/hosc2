@@ -10,7 +10,7 @@ object DeBruijnConverter {
 	}
 	
 	def removeNames(conMap: Map[String, (Int, Int)], gCon: DeBruijnContext, bCon: DeBruijnContext, fCon: DeBruijnContext, expr: HsExpr): Expr = {
-		
+		val conInfo = conMap.withDefaultValue((-1, -1))
 		def remove(bCon: DeBruijnContext, expr: HsExpr): Expr = expr match {
 			case v@HsVar(_) => {
 				lazy val bI = bCon.indexOf(v)
@@ -21,13 +21,13 @@ object DeBruijnConverter {
 			// context expansion
 			case HsLam(v, e) => Lam(remove(v :: bCon, e))
 			case HsCon(n, args) => {
-				val (dtI, dcI) = conMap.getOrElse(n, (-1, -1))
+				val (dtI, dcI) = conInfo(n)
 				Con(n, args map {remove(bCon, _)}, dtI, dcI)
 			}
 			case HsApp(e1, e2) => App(remove(bCon, e1), remove(bCon, e2))
 			// converting alternatives to lambdas
 			case HsCase(sel, alts) => {
-				val (dtI, _) = conMap.getOrElse(alts.head.pat.name, (-1, -1))
+				val (dtI, _) = conInfo(alts.head.pat.name)
 				val lambdas = alts map {case HsAlt(HsPat(n, xs), e) => xs.foldRight(e){HsLam}}
 				val convAlts = lambdas map {remove(bCon, _)}
 				val convSel = remove(bCon, sel)
