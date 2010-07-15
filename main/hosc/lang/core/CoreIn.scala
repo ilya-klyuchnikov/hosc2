@@ -11,7 +11,7 @@ object CoreIn {
 		val globalContext = 
 			hsModule.binds map {_.v}
 		val newBindsBodies = 
-			hsModule.binds map {b => DeBruijnConverter.removeNames(map, globalContext, Nil, Nil, b.expr)}
+			hsModule.binds map {b => DeBruijnConverter.removeNames(map, globalContext, (Nil, Nil), Nil, b.expr)}
 		val newBinds = 
 			newBindsBodies.zipWithIndex.map {case (nb, i) => Bind(GVar(i), nb)}
 		val dataTypes = 

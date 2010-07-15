@@ -26,8 +26,8 @@ case class FVar(i: Int) extends Var
 case class GVar(i: Int) extends Var {
 	override def toString = "[" + i + "]"
 }
-case class BVar(i: Int) extends Var {
-	override def toString = i.toString
+case class BVar(i: Int, ei: Int) extends Var {
+	override def toString = "[" + i + ", " + ei + "]"
 }
 
 case class Con(name: String, args: List[Expr], dtIndex: Int = -1, dcIndex: Int = -1) extends Expr {
