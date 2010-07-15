@@ -2,11 +2,11 @@ package hosc.lang.core
 
 import hosc.lang.hs._
 
-object CoreIn {
+object CoreSource {
 	
 	def coreModuleFromFile(path: String): Module = {
-		val hsModule = HsIn.readHsModule(path)
-		val map = HsIn.consInfo(hsModule)
+		val hsModule = HsSource.readHsModule(path)
+		val map = HsSource.consInfo(hsModule)
 		
 		val globalContext = 
 			hsModule.binds map {_.v}

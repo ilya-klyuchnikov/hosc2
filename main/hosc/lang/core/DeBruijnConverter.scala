@@ -13,6 +13,7 @@ object DeBruijnConverter {
 				lazy val bI = bvs.indexOf(v)
 				lazy val gI = gCon.indexOf(v)
 				lazy val fI = fCon.indexOf(v)
+				
 				if (bI >= 0) { BVar(bI, is(bI)) } else if (gI >= 0) { GVar(gI) } else { FVar(fI) }
 			}
 			

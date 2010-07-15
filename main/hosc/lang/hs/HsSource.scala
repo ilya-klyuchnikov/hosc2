@@ -3,7 +3,11 @@ package hosc.lang.hs
 import scala.io.Source
 import scala.util.parsing.input.StreamReader
 
-object HsIn {
+/**
+ * This object provides convenience methods to get
+ * an abstract tree of hs language from different sources.
+ */
+object HsSource {
 	
 	def readHsModule(path: String): HsModule = {
 		val reader = StreamReader(Source.fromFile(path).reader)
