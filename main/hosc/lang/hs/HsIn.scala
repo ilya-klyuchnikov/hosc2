@@ -1,4 +1,4 @@
-package hosc.lang.io
+package hosc.lang.hs
 
 import scala.io.Source
 import scala.util.parsing.input.StreamReader

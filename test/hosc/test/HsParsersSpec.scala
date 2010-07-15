@@ -6,7 +6,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import scala.util.parsing.input.{CharArrayReader, Reader}
 
-import hosc.lang.io.{HsVar => V, HsApp => A, HsLam => L, HsCase => Cs, 
+import hosc.lang.hs.{HsVar => V, HsApp => A, HsLam => L, HsCase => Cs, 
 	HsAlt => Alt, HsPat => P, HsBind => B, HsLet => Let, HsCon => C, 
 	HsTypeVar => TV, HsTypeCon => TC, HsTypeFun => TF, HsDataDef => DF, HsDataCon => DC, _}
 

@@ -1,6 +1,6 @@
 package hosc.lang
 
-import hosc.lang.io._
+import hosc.lang.hs._
 
 package object core {
 	type Subst = Map[FVar, Expr]

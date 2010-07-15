@@ -1,7 +1,7 @@
 package hosc.test
 
-import hosc.lang.io.HsParsers._
-import hosc.lang.io.HsIn._
+import hosc.lang.hs.HsParsers._
+import hosc.lang.hs.HsIn._
 import scala.util.parsing.input.{CharArrayReader, Reader}
 
 trait Util {

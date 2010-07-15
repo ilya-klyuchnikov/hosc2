@@ -1,4 +1,4 @@
-package hosc.lang.io
+package hosc.lang.hs
 
 /*
  * This is an abstract syntax for the input/output language

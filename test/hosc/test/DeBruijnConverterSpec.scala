@@ -1,11 +1,14 @@
 package hosc.test
 
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
 import hosc.lang.core._
 import hosc.lang.core.DeBruijnConverter
 
+@RunWith(classOf[JUnitRunner])
 class DeBruijnConverterSpec extends FunSuite with ShouldMatchers with Util {
 	
 	// see Exercise 6.1.1 in TAPL

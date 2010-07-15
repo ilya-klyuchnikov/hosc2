@@ -1,6 +1,6 @@
 package hosc.lang.core
 
-import hosc.lang.io._
+import hosc.lang.hs._
 
 object CoreIn {
 	

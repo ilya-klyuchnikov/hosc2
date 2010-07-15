@@ -1,4 +1,4 @@
-package hosc.lang.io
+package hosc.lang.hs
 
 import scala.util.parsing.input.{Positional, Reader}
 import scala.util.parsing.combinator.lexical.StdLexical
