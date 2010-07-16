@@ -1,3 +1,3 @@
-import hosc.lang.core.CoreIn
+import hosc.lang.core.CoreSource
 
-val m = CoreIn.coreModuleFromFile("samples/in/rev.hs")
+val m = CoreSource.coreModuleFromFile("samples/in/rev.hs")
